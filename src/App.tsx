@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, Trash2, FileSignature, Cloud, X, Delete } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Trash2, FileSignature, Cloud, X, Delete, History, Check, Eye } from 'lucide-react';
 
 const Header = ({ title, onBack }: { title: string, onBack?: () => void }) => (
   <div className="flex items-center justify-between px-4 py-3.5 bg-white shrink-0 relative">
@@ -503,7 +503,18 @@ function StepPreview({ signatureUrl, hasSetPin, setHasSetPin, onConfirm, onRetak
   );
 }
 
-function StepDetails({ userInfo, signatureUrl, paymentInfo, onBack, onRetake, onResetPassword, onPay }: any) {
+function StepDetails({ 
+  userInfo, 
+  signatureUrl, 
+  paymentInfo, 
+  onBack, 
+  onRetake, 
+  onResetPassword, 
+  onSignatureHistory,
+  onPay 
+}: any) {
+  const [showResetPinModal, setShowResetPinModal] = useState(false);
+
   const maskIdCard = (id: string) => {
     if (!id || id.length < 15) return id;
     return id.replace(/^(.{6})(?:\d+)(.{4})$/, "$1********$2");
@@ -518,14 +529,26 @@ function StepDetails({ userInfo, signatureUrl, paymentInfo, onBack, onRetake, on
   }).replace(/\//g, '-');
 
   return (
-    <div className="flex flex-col h-full bg-[#f4f5f7]">
+    <div className="flex flex-col h-full bg-[#f4f5f7] relative">
       <Header title="专家云签" onBack={onBack} />
+
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-3 text-[14px] text-gray-700 flex items-center gap-2 mt-2 bg-[#f4f5f7]">
-          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white">
-            <FileSignature className="w-3 h-3" />
+        {/* 我的云签 Section */}
+        <div className="px-4 py-3 text-[14px] text-gray-700 flex items-center justify-between mt-2 bg-[#f4f5f7]">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white">
+              <FileSignature className="w-3 h-3" />
+            </div>
+            我的云签
           </div>
-          我的云签
+          {onRetake && (
+            <button 
+              onClick={onRetake}
+              className="text-[13px] text-[#165dff] font-medium active:opacity-75 transition-opacity"
+            >
+              重新采集
+            </button>
+          )}
         </div>
         
         <div className="bg-white">
@@ -538,6 +561,7 @@ function StepDetails({ userInfo, signatureUrl, paymentInfo, onBack, onRetake, on
           </div>
         </div>
 
+        {/* 云签信息 Section */}
         <div className="px-4 py-3 mt-2 text-[14px] text-gray-700 flex items-center gap-2 bg-[#f4f5f7]">
           <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white">
             <FileSignature className="w-3 h-3" />
@@ -562,12 +586,31 @@ function StepDetails({ userInfo, signatureUrl, paymentInfo, onBack, onRetake, on
             <span className="text-gray-600 text-[15px]">有效期</span>
             <span className={paymentInfo?.status === 'paid' ? "text-gray-900 text-[15px]" : "text-red-500 text-[15px]"}>{paymentInfo?.status === 'paid' ? paymentInfo.date : '待支付'}</span>
           </div>
-          <div className="flex items-center justify-between px-4 py-4 active:bg-gray-50 transition-colors cursor-pointer" onClick={onResetPassword}>
+          
+          {/* 签名历史 入口 (样式和重置密码一致) */}
+          <div 
+            className="flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50 transition-colors cursor-pointer" 
+            onClick={onSignatureHistory}
+          >
+            <span className="text-gray-600 text-[15px]">签名历史</span>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+
+          {/* 重置密码 入口 */}
+          <div 
+            className="flex items-center justify-between px-4 py-4 active:bg-gray-50 transition-colors cursor-pointer" 
+            onClick={() => {
+              if (onResetPassword) onResetPassword();
+              setShowResetPinModal(true);
+            }}
+          >
             <span className="text-gray-600 text-[15px]">重置密码</span>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </div>
         </div>
       </div>
+
+      {/* Bottom Button */}
       <div className="bg-white px-4 py-4 pb-8 shrink-0">
         <button 
           className="w-full bg-[#165dff] text-white rounded-full py-3.5 text-[16px] font-medium shadow-lg shadow-blue-600/30 active:scale-[0.98] transition-transform"
@@ -576,6 +619,14 @@ function StepDetails({ userInfo, signatureUrl, paymentInfo, onBack, onRetake, on
           去支付
         </button>
       </div>
+
+      {/* 重置密码弹窗 (Pin Reset Modal) */}
+      {showResetPinModal && (
+        <PinModal 
+          onClose={() => setShowResetPinModal(false)}
+          onSuccess={() => setShowResetPinModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -699,6 +750,7 @@ export default function App() {
             }}
             onBack={() => setCurrentStep(1)}
             onResetPassword={() => {}}
+            onSignatureHistory={() => {}}
             onPay={() => setCurrentStep(3)}
           />
         )}
