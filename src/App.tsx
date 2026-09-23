@@ -54,6 +54,44 @@ function Step0({ userInfo, setUserInfo, onNext }: any) {
   );
 }
 
+function StepPlatform({ platform, setPlatform, onNext, onBack }: any) {
+  const isValid = platform !== '';
+  return (
+    <div className="flex flex-col h-full bg-[#f4f5f7]">
+      <Header title="选择公共资源平台" onBack={onBack} />
+      <div className="bg-white mt-2">
+        <button 
+          className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 bg-white active:bg-gray-50 transition-colors"
+          onClick={() => setPlatform('南通市公共资源交易平台')}
+        >
+          <span className="text-gray-900 text-[16px]">南通市公共资源交易平台</span>
+          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${platform === '南通市公共资源交易平台' ? 'border-[#165dff] bg-[#165dff]' : 'border-gray-300'}`}>
+            {platform === '南通市公共资源交易平台' && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+          </div>
+        </button>
+        <button 
+          className="w-full flex items-center justify-between px-4 py-4 bg-white active:bg-gray-50 transition-colors"
+          onClick={() => setPlatform('青海省公共资源交易平台')}
+        >
+          <span className="text-gray-900 text-[16px]">青海省公共资源交易平台</span>
+          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${platform === '青海省公共资源交易平台' ? 'border-[#165dff] bg-[#165dff]' : 'border-gray-300'}`}>
+            {platform === '青海省公共资源交易平台' && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+          </div>
+        </button>
+      </div>
+      <div className="mt-auto px-4 py-6 bg-[#f4f5f7]">
+        <button 
+          className={`w-full rounded-full py-3.5 text-[16px] font-medium transition-colors ${isValid ? 'bg-[#165dff] text-white' : 'bg-[#165dff]/50 text-white'}`}
+          onClick={isValid ? onNext : undefined}
+          disabled={!isValid}
+        >
+          下一步
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Step1({ signatureUrl, onNext, onPay, onBack }: any) {
   return (
     <div className="flex flex-col h-full bg-[#f4f5f7]">
@@ -549,6 +587,7 @@ export default function App() {
   const [paths, setPaths] = useState<any[]>([]);
   const [paymentInfo, setPaymentInfo] = useState<{ status: 'unpaid' | 'paid', type?: string, date?: string }>({ status: 'unpaid' });
   const [hasSetPin, setHasSetPin] = useState(false);
+  const [platform, setPlatform] = useState('');
   
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-0 sm:p-4">
@@ -557,7 +596,15 @@ export default function App() {
           <Step0 
             userInfo={userInfo} 
             setUserInfo={setUserInfo} 
-            onNext={() => setCurrentStep(1)} 
+            onNext={() => setCurrentStep(0.5)} 
+          />
+        )}
+        {currentStep === 0.5 && (
+          <StepPlatform
+            platform={platform}
+            setPlatform={setPlatform}
+            onNext={() => setCurrentStep(1)}
+            onBack={() => setCurrentStep(0)}
           />
         )}
         {currentStep === 1 && (
@@ -565,7 +612,7 @@ export default function App() {
             signatureUrl={signatureUrl} 
             onNext={() => setCurrentStep(2)} 
             onPay={() => setCurrentStep(5)} 
-            onBack={() => setCurrentStep(0)}
+            onBack={() => setCurrentStep(0.5)}
           />
         )}
         {currentStep === 2 && (
